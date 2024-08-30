@@ -14,10 +14,7 @@ struct Opts {
 }
 
 fn check_file_exists(file_path: &str) -> bool {
-    match Path::new(file_path).metadata() {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    Path::new(file_path).metadata().is_ok()
 }
 
 fn backup_file(file_name: &str) {
