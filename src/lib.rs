@@ -5,6 +5,8 @@ fn check_file_exists(file_path: &str) -> bool {
     Path::new(file_path).metadata().is_ok()
 }
 
+/// The function which backups the file
+/// It erases any existing backup with the same name
 pub fn backup_file(file_name: &str) {
     if check_file_exists(file_name) {
         let bak_name = format!("{}.bak", file_name);
@@ -15,6 +17,7 @@ pub fn backup_file(file_name: &str) {
     }
 }
 
+/// A function to delete the backup file
 pub fn delete_backup_file(file_name: &str) {
     let bak_name = format!("{}.bak", file_name);
     if check_file_exists(&bak_name) {
