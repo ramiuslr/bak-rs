@@ -13,12 +13,18 @@ struct Opts {
     filename: PathBuf,
 }
 
-fn main() {
+fn main() -> Result<(), std::io::Error> {
     let opts = Opts::parse();
 
     if opts.delete {
-        delete_backup_file(opts.filename.to_str().unwrap());
+        if let Err(e) = delete_backup_file(opts.filename.to_str().unwrap()) {
+            match e.kind() {
+                std::io::ErrorKind::NotFound => eprintln!("File not found"),
+                _ => eprintln!("Critical error: {}", e),
+            }
+        }
     } else {
         backup_file(opts.filename.to_str().unwrap());
     }
+    Ok(())
 }
