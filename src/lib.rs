@@ -1,5 +1,5 @@
 // use sha2::{Digest, Sha256};
-use std::{fs, path::Path, process};
+use std::path::Path;
 
 // fn hash_file(path: &Path) -> Result<Vec<u8>, std::io::Error> {
 //     let mut file = fs::File::open(path)?;
@@ -17,10 +17,6 @@ use std::{fs, path::Path, process};
 //     Ok(hasher.finalize().to_vec())
 // }
 
-fn check_file_exists(file_path: &str) -> bool {
-    Path::new(file_path).metadata().is_ok()
-}
-
 // fn compare_hashes(file1: &Path, file2: &Path) -> Result<bool, std::io::Error> {
 //     let hash1 = hash_file(file1)?;
 //     let hash2 = hash_file(file2)?;
@@ -29,27 +25,23 @@ fn check_file_exists(file_path: &str) -> bool {
 
 /// The function which backups the file
 /// It erases any existing backup with the same name
-pub fn backup_file(file_name: &str) {
-    if check_file_exists(file_name) {
-        let bak_name = format!("{}.bak", file_name);
-        fs::copy(file_name, &bak_name).expect("Failed to create backup file");
+pub fn backup_file(file: &Path) -> Result<(), std::io::Error> {
+    let mut bak_name = file.to_path_buf();
+    bak_name.set_extension("bak");
+    if let Err(e) = std::fs::copy(file, bak_name) {
+        return Err(e);
     } else {
-        eprintln!("File {} not found", file_name);
-        process::exit(1);
+        return Ok(());
     }
 }
 
 /// A function to delete the backup file
-/// Outputs a warning if files changed
-pub fn delete_backup_file(file_name: &str) -> Result<(), std::io::Error> {
-    let bak_name = format!("{}.bak", file_name);
-    if Path::new(&bak_name).try_exists()? {
-        fs::remove_file(&bak_name).expect("Failed to delete backup file");
+pub fn delete_backup_file(file: &Path) -> Result<(), std::io::Error> {
+    let mut bak_name = file.to_path_buf();
+    bak_name.set_extension("bak");
+    if let Err(e) = std::fs::remove_file(&bak_name) {
+        Err(e)
     } else {
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::NotFound,
-            format!("Backup file {} not found", bak_name),
-        ));
+        Ok(())
     }
-    Ok(())
 }
