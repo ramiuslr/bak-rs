@@ -10,15 +10,29 @@ struct Opts {
     delete: bool,
 
     /// Specify the filename to backup
-    filename: PathBuf,
+    file: PathBuf,
 }
 
-fn main() {
+fn error_handling(e: std::io::Error) {
+    match e.kind() {
+        std::io::ErrorKind::NotFound => eprintln!("File not found"),
+        std::io::ErrorKind::PermissionDenied => eprintln!("Cannot open file, check permissions"),
+        _ => eprintln!("Critical error: {}", e),
+    }
+    std::process::exit(1);
+}
+
+fn main() -> Result<(), std::io::Error> {
     let opts = Opts::parse();
 
     if opts.delete {
-        delete_backup_file(opts.filename.to_str().unwrap());
+        if let Err(e) = delete_backup_file(&opts.file) {
+            error_handling(e);
+        }
     } else {
-        backup_file(opts.filename.to_str().unwrap());
+        if let Err(e) = backup_file(&opts.file) {
+            error_handling(e);
+        }
     }
+    Ok(())
 }
